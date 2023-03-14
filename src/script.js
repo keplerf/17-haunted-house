@@ -15,10 +15,22 @@ const canvas = document.querySelector("canvas.webgl");
 // Scene
 const scene = new THREE.Scene();
 
+const fog = new THREE.Fog("#262837", 1, 11);
+scene.fog = fog;
+
 /**
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
+const doorColorTexture = textureLoader.load("/textures/door/color.jpg");
+const doorAlphaTexture = textureLoader.load("/textures/door/alpha.jpg");
+const doorAmbientOcclusionTexture = textureLoader.load(
+  "/textures/door/ambientOcclusion.jpg"
+);
+const doorHeightTexture = textureLoader.load("/textures/door/height.jpg");
+const doorMetalnessTexture = textureLoader.load("/textures/door/metalness.jpg");
+const doorNormalTexture = textureLoader.load("/textures/door/normal.jpg");
+const doorRoughnessTexture = textureLoader.load("/textures/door/roughness.jpg");
 
 /**
  * House
@@ -49,7 +61,11 @@ house.add(roof);
 // Door
 const door = new THREE.Mesh(
   new THREE.PlaneGeometry(2, 2),
-  new THREE.MeshStandardMaterial({ color: "#aa7e6b" })
+  new THREE.MeshStandardMaterial({
+    map: doorColorTexture,
+    transparent: true,
+    alphaMap: doorAlphaTexture,
+  })
 );
 door.position.y = 1;
 door.position.z = walls.geometry.parameters.width * 0.5 + 0.005;
@@ -103,7 +119,7 @@ scene.add(floor);
  * Lights
  */
 // Ambient light
-const ambientLight = new THREE.AmbientLight("#ffffff", 0.5);
+const ambientLight = new THREE.AmbientLight("#ffffff", 0.12);
 gui.add(ambientLight, "intensity").min(0).max(1).step(0.001);
 scene.add(ambientLight);
 
@@ -115,6 +131,10 @@ gui.add(moonLight.position, "x").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "y").min(-5).max(5).step(0.001);
 gui.add(moonLight.position, "z").min(-5).max(5).step(0.001);
 scene.add(moonLight);
+
+const doorLight = new THREE.PointLight("#ff7d46", 1, 7);
+doorLight.position.set(0, 2.2, 2.7);
+house.add(doorLight);
 
 /**
  * Sizes
@@ -176,6 +196,8 @@ const tick = () => {
 
   // Update controls
   controls.update();
+  // camera.position.x = Math.sin(elapsedTime * 0.05) * 10;
+  // camera.position.z = Math.cos(elapsedTime * 0.05) * 10;
 
   // Render
   renderer.render(scene, camera);
